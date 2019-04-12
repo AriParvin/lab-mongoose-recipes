@@ -27,17 +27,27 @@ process.on("SIGINT", () => {
 	})
 })
 console.log(data)
-Recipe.insertMany(data, err => {
-	if (err) {
-		console.log("Something went wrong:", err)
-	} else {
-		console.log("multiple recipes saved")
-	}
-})
-Recipe.updateOne({ title: "Rigatoni alla Genovese" }, { duration: 100 })
-	.then(console.log("changed duration to: 100"))
-	.catch(console.log("Something went wrong.."))
+const insertRecipe = () =>
+	Recipe.insertMany(data).then(docs => {
+		docs.forEach(el => {
+			console.log(el.title)
+		})
+	})
 
-Recipe.deleteOne({ title: "Carrot Cake" })
-	.then(console.log("removed CC"))
-	.catch(console.log("Something went wrong.."))
+const updateRigatoni = () =>
+	Recipe.findOneAndUpdate({ title: "Rigatoni alla Genovese" }, { duration: 100 }, { new: true })
+
+const deleteCarrot = () =>
+	Recipe.deleteOne({ title: "Carrot Cake" })
+
+
+insertRecipe()
+	.then(updateRigatoni)
+	.then(deleteCarrot)
+	.then(() => {
+		console.log("disconnected")
+		mongoose.disconnect
+	})
+	.catch(err => {
+		console.error(err)
+	})
